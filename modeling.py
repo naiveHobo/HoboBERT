@@ -246,19 +246,6 @@ class BertModel(object):
         if is_training:
             self.pooled_output = tf.nn.dropout(self.pooled_output, keep_prob=0.9)
 
-      with tf.variable_scope("output"):
-        self.output_layer = tf.layers.dense(
-            self.pooled_output,
-            out_size,
-            activation=tf.nn.relu,
-            kernel_initializer=create_initializer(config.initializer_range),
-            name="")
-        if is_training:
-          self.output_layer = tf.nn.dropout(self.output_layer, keep_prob=0.9)
-
-  def get_output_layer(self):
-    return self.output_layer
-
   def get_pooled_output(self):
     return self.pooled_output
 
@@ -353,11 +340,44 @@ class HoboBert(object):
                                                full_position_embeddings=full_position_embeddings))
 
       with tf.variable_scope("merged"):
-        merged_output = tf.concat([model.get_output_layer() for model in self.transformer_list], axis=1)
+        merged_output = tf.stack([model.get_pooled_output() for model in self.transformer_list], axis=1)
+        merged_shape = get_shape_list(merged_output, expected_rank =3)
+
+      with tf.variable_scope("merged_encoder"):
+        merged_ids = tf.ones([merged_shape[0], merged_shape[1]], dtype=tf.int32)
+        merged_mask = tf.ones([merged_shape[0], merged_shape[1]], dtype=tf.int32)
+
+        attention_mask = create_attention_mask_from_input_mask(merged_ids, merged_mask)
+
+        merged_encoder_layers = transformer_model(
+            input_tensor=merged_output,
+            attention_mask=attention_mask,
+            hidden_size=config.hidden_size,
+            num_hidden_layers=config.num_hidden_layers,
+            num_attention_heads=config.num_attention_heads,
+            intermediate_size=config.intermediate_size,
+            intermediate_act_fn=get_activation(config.hidden_act),
+            hidden_dropout_prob=config.hidden_dropout_prob,
+            attention_probs_dropout_prob=config.attention_probs_dropout_prob,
+            initializer_range=config.initializer_range,
+            do_return_all_layers=True)
+
+        sequence_output = merged_encoder_layers[-1]
+
+      with tf.variable_scope("merged_pooler"):
+        first_token_tensor = tf.squeeze(sequence_output[:, 0:1, :], axis=1)
+        pooled_output = tf.layers.dense(
+            first_token_tensor,
+            config.hidden_size,
+            activation=tf.tanh,
+            kernel_initializer=create_initializer(config.initializer_range),
+            name="pooled_ouput")
+        if is_training:
+            pooled_output = tf.nn.dropout(pooled_output, keep_prob=0.9)
 
       with tf.variable_scope("output"):
         self.output_layer = tf.layers.dense(
-            merged_output,
+            pooled_output,
             num_transformer_models,
             kernel_initializer=tf.truncated_normal_initializer(stddev=0.02))
 

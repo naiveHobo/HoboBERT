@@ -33,6 +33,20 @@ The first implementation of HoboBERT has the following features:
 8. This merged layer is followed by another dense layer of size 10
    which is finally used to predict the best passage for the query.
 
+The second implementation of HoboBERT has the following features:
+1. The architecture is similar to the first implementation till the pooler
+   layers in the individual BERT models.
+2. The output of the pooler layers from the BERT models is stacked to 
+   create a tensor of size [batch_size, 10, hidden_size].
+3. The tensor is used as a sentence sequence and can be fed into another
+   encoder containing 3 transformer blocks. This encoder uses attention
+   and can thus learn to attend to the encoded sentence that encodes the 
+   best query-passage pair.
+4. The "merged_pooler" layer takes the hidden state of the first sentence
+   in the sequence to pool the merged encoder model.
+5. The output of the "merged_pooler" layer is then connected to a dense
+   layer which produces the classification scores.
+
 ### TODO
 
 - Create ensemble model containing 10 copies of BERT Small model
