@@ -448,12 +448,20 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
       if use_tpu:
 
         def tpu_scaffold():
-          tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+          if isinstance(assignment_map, list):
+            for i in range(10):
+              tf.train.init_from_checkpoint(init_checkpoint, assignment_map[i])
+          else:
+            tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
           return tf.train.Scaffold()
 
         scaffold_fn = tpu_scaffold
       else:
-        tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+        if isinstance(assignment_map, list):
+          for i in range(10):
+            tf.train.init_from_checkpoint(init_checkpoint, assignment_map[i])
+        else:
+          tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
 
     tf.logging.info("**** Trainable Variables ****")
     for var in tvars:
