@@ -456,9 +456,8 @@ def get_assignment_map_from_checkpoint(tvars, init_checkpoint, init_from_checkpo
 
   init_vars = tf.train.list_variables(init_checkpoint)
 
-  assignment_map = collections.OrderedDict()
-
   if init_from_checkpoint:
+    assignment_map = collections.OrderedDict()
     for x in init_vars:
       (name, var) = (x[0], x[1])
       if name not in name_to_variable:
@@ -467,13 +466,20 @@ def get_assignment_map_from_checkpoint(tvars, init_checkpoint, init_from_checkpo
       initialized_variable_names[name] = 1
       initialized_variable_names[name + ":0"] = 1
   else:
+    assignment_map = [collections.OrderedDict()] * 10
     for x in init_vars:
       (name, var) = (x[0], x[1])
       for y in name_to_variable:
         if name[5:] in y:
-          assignment_map[y] = name
           initialized_variable_names[y] = 1
           initialized_variable_names[y + ":0"] = 1
+          if 'HoboBERT/embeddings' in y:
+            assignment_map[0][name] = y
+            continue
+          for i in range(10):
+            if 'transformer_{}'.format(i) in y:
+              assignment_map[i][name] = y
+              break
 
   return (assignment_map, initialized_variable_names)
 
