@@ -448,7 +448,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
       if use_tpu:
 
         def tpu_scaffold():
-          if isinstance(assignment_map, list):
+          if not init_from_checkpoint:
             for i in range(10):
               tf.train.init_from_checkpoint(init_checkpoint, assignment_map[i])
           else:
@@ -457,7 +457,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
         scaffold_fn = tpu_scaffold
       else:
-        if isinstance(assignment_map, list):
+        if not init_from_checkpoint:
           for i in range(10):
             tf.train.init_from_checkpoint(init_checkpoint, assignment_map[i])
         else:

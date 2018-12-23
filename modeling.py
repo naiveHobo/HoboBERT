@@ -433,16 +433,14 @@ def get_assignment_map_from_checkpoint(tvars, init_checkpoint, init_from_checkpo
       (name, var) = (x[0], x[1])
       for y in name_to_variable:
         if name[5:] in y:
+          initialized_variable_names[y] = 1
+          initialized_variable_names[y + ":0"] = 1
           if 'HoboBERT/embeddings' in y:
             assignment_map[0][name] = y
-            initialized_variable_names[y] = 1
-            initialized_variable_names[y + ":0"] = 1
             continue
           for i in range(10):
             if 'transformer_{}'.format(i) in y:
               assignment_map[i][name] = y
-              initialized_variable_names[y] = 1
-              initialized_variable_names[y + ":0"] = 1
               break
 
   return (assignment_map, initialized_variable_names)
