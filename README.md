@@ -25,13 +25,10 @@ The first implementation of HoboBERT has the following features:
    the hidden state corresponding to the first token. This representation
    is followed by a fully-connected layer containing the same the number
    of neurons as the hidden layer size in the transformer blocks.
-6. Another dense layer is added after the "pooler" layer in each BERT 
-   model to reduce the representation size and thus, the number of 
-   parameters further down the model. The size of this dense layer is 128.
-7. The output of this layer is taken from each individual BERT model
-   and concatenated into a single layer of size 128 * 10 = 1280.
-8. This merged layer is followed by another dense layer of size 10
-   which is finally used to predict the best passage for the query.
+6. The output of this layer is taken from each individual BERT model
+   and concatenated into a single layer of size 768 * 10 = 7680.
+7. This merged layer is followed by a dense layer of size 10
+   which is finally used to predict the classification scores.
 
 ### TODO
 

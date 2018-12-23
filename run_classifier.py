@@ -400,7 +400,6 @@ def create_model(bert_config, is_training, input_ids_list, input_mask_list, segm
       input_mask_list=input_mask_list,
       token_type_ids_list=segment_ids_list,
       num_transformer_models=10,
-      transformer_out_size=128,
       use_one_hot_embeddings=use_one_hot_embeddings)
 
   logits = model.get_output_layer()

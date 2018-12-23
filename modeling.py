@@ -132,7 +132,6 @@ class BertModel(object):
                input_ids,
                input_mask=None,
                token_type_ids=None,
-               out_size=128,
                use_one_hot_embeddings=True,
                scope=None,
                embedding_table=None,
@@ -147,7 +146,6 @@ class BertModel(object):
       input_ids: int32 Tensor of shape [batch_size, seq_length].
       input_mask: (optional) int32 Tensor of shape [batch_size, seq_length].
       token_type_ids: (optional) int32 Tensor of shape [batch_size, seq_length].
-      out_size: Size of the output of the pooler layer.
       use_one_hot_embeddings: (optional) bool. Whether to use one-hot word
         embeddings or tf.embedding_lookup() for the word embeddings. On the TPU,
         it is must faster if this is True, on the CPU or GPU, it is faster if
@@ -246,19 +244,6 @@ class BertModel(object):
         if is_training:
             self.pooled_output = tf.nn.dropout(self.pooled_output, keep_prob=0.9)
 
-      with tf.variable_scope("output"):
-        self.output_layer = tf.layers.dense(
-            self.pooled_output,
-            out_size,
-            activation=tf.nn.relu,
-            kernel_initializer=create_initializer(config.initializer_range),
-            name="")
-        if is_training:
-          self.output_layer = tf.nn.dropout(self.output_layer, keep_prob=0.9)
-
-  def get_output_layer(self):
-    return self.output_layer
-
   def get_pooled_output(self):
     return self.pooled_output
 
@@ -296,7 +281,6 @@ class HoboBert(object):
                input_mask_list=None,
                token_type_ids_list=None,
                num_transformer_models=10,
-               transformer_out_size=128,
                use_one_hot_embeddings=True):
     """Constructor for HoboBert.
       Args:
@@ -307,7 +291,6 @@ class HoboBert(object):
           input_mask_list: (optional) list of int32 Tensor of shape [batch_size, seq_length].
           token_type_ids_list: (optional) list int32 Tensor of shape [batch_size, seq_length].
           num_transformer_models: Number of BERT models in HoboBERT.
-          transformer_out_size: Size of the output of each BERT model.
           use_one_hot_embeddings: (optional) bool. Whether to use one-hot word
             embeddings or tf.embedding_lookup() for the word embeddings. On the TPU,
             it is must faster if this is True, on the CPU or GPU, it is faster if
@@ -345,7 +328,6 @@ class HoboBert(object):
                                                input_ids=input_ids_list[transformer_idx],
                                                input_mask=input_mask_list[transformer_idx],
                                                token_type_ids=token_type_ids_list[transformer_idx],
-                                               out_size=transformer_out_size,
                                                use_one_hot_embeddings=use_one_hot_embeddings,
                                                scope="transformer_%d" % transformer_idx,
                                                embedding_table=embedding_table,
@@ -353,7 +335,7 @@ class HoboBert(object):
                                                full_position_embeddings=full_position_embeddings))
 
       with tf.variable_scope("merged"):
-        merged_output = tf.concat([model.get_output_layer() for model in self.transformer_list], axis=1)
+        merged_output = tf.concat([model.get_pooled_output() for model in self.transformer_list], axis=1)
 
       with tf.variable_scope("output"):
         self.output_layer = tf.layers.dense(
