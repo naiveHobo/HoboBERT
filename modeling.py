@@ -239,8 +239,7 @@ class BertModel(object):
             first_token_tensor,
             config.hidden_size,
             activation=tf.tanh,
-            kernel_initializer=create_initializer(config.initializer_range),
-            name="pooled_ouput")
+            kernel_initializer=create_initializer(config.initializer_range))
         if is_training:
             self.pooled_output = tf.nn.dropout(self.pooled_output, keep_prob=0.9)
 
