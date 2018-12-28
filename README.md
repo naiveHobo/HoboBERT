@@ -1,6 +1,6 @@
 # HoboBERT
 
-Ensemble of 10 modified BERT Small models for Microsoft AI Challenge
+Ensemble of 10 modified BERT Base models for prediction of best answers for queries on search engines.
 
 ### Implementation
 
