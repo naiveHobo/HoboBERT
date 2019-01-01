@@ -65,3 +65,12 @@ The first implementation of HoboBERT has the following features:
      to learn with less parameters. Not exactly sure if this would help
      in the learning in any way, but CNNs have proved to work well
      for NLP tasks in the past.
+
+### CITATIONS
+@article{devlin2018bert,
+  title={BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding},
+  author={Devlin, Jacob and Chang, Ming-Wei and Lee, Kenton and Toutanova, Kristina},
+  journal={arXiv preprint arXiv:1810.04805},
+  year={2018}
+}
+
